@@ -3,8 +3,10 @@ version: '3.8'
 services:
 
   # Carla server container
-  carla:
-    image: carlasim/carla:0.9.13
+  carla_server:
+    build:
+      context: ./docker/carla_server_node/
+      dockerfile: Dockerfile
     container_name: carla_server
     runtime: nvidia
     ports:
@@ -14,14 +16,14 @@ services:
   # Carla ROS bridge container
   bridge:
     build:
-      context: ./docker/ros_carla_bridge/
-      dockerfile: Dockerfile
+      context: ./docker
+      dockerfile: ./ros_carla_bridge/Dockerfile
     container_name: carla_ros_bridge
     command: ros2 launch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch.py host:=carla_server timeout:=5
     runtime: nvidia
     restart: always
     depends_on: 
-      carla:
+      carla_server:
         condition: service_started
 
   # Custom ROS2 container
@@ -38,8 +40,8 @@ services:
   # Custom Carla Node
   carla_client:
     build:
-      context: ./docker/carla_client_node/
-      dockerfile: Dockerfile
+      context: ./docker
+      dockerfile: ./carla_client_node/Dockerfile
     container_name: carla_client
     restart: always
     depends_on: 
@@ -63,11 +65,13 @@ services:
   # Example ros talker node
   ros_talker:
     image: osrf/ros:humble-desktop-full
+    container_name: ros_talker
     command: ros2 run demo_nodes_cpp talker
 
    # Example ros listener node
   ros_listener:
     image: osrf/ros:humble-desktop-full
+    container_name: ros_listener
     command: ros2 run demo_nodes_cpp listener
     depends_on:
       - ros_talker
