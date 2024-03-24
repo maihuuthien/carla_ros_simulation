@@ -4,10 +4,10 @@ services:
 
   # Carla server container
   carla:
-    image: carlasim/carla:0.9.13
+    image: carlasim/carla:0.9.11
     container_name: carla
     runtime: nvidia
-    command: ["bash", "./CarlaUE4.sh", "-vulkan", "-quality-level=Low"]
+    command: ["bash", "./CarlaUE4.sh", "-opengl", "-quality-level=Low"]
     runtime: nvidia
 
     environment:
