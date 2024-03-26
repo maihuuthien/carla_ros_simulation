@@ -19,9 +19,9 @@ services:
     image: carla_ros_bridge:latest
     container_name: carla_ros_bridge
     command: ros2 launch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch.py host:=${CARLA_HOST_IP} timeout:=5
-    runtime: nvidia
+    # runtime: nvidia
     restart: always
-    # depends_on: 
+    # depends_on:
     #   carla:
     #     condition: service_started
 
@@ -33,7 +33,7 @@ services:
     image: ros2_container:latest
     container_name: ros2_container
     command: ros2 run ros2_utils list_topics_node
-    depends_on: 
+    depends_on:
       bridge:
         condition: service_started
 
@@ -48,7 +48,7 @@ services:
       - CARLA_HOST_IP=${CARLA_HOST_IP}
       - CARLA_HOST_PORT=${CARLA_HOST_PORT}
     restart: always
-    depends_on: 
+    depends_on:
       bridge:
         condition: service_started
 
@@ -63,18 +63,18 @@ services:
       - 8765:8765
     command: ros2 launch foxglove_bridge foxglove_bridge_launch.xml port:=8765
     restart: always
-    depends_on: 
+    depends_on:
       bridge:
         condition: service_started
 
   # Example ros talker node
-  # ros_talker:
-  #   image: osrf/ros:humble-desktop-full
-  #   command: ros2 run demo_nodes_cpp talker
+  ros_talker:
+    image: osrf/ros:humble-desktop-jammy
+    command: ros2 run demo_nodes_cpp talker
 
   #  # Example ros listener node
-  # ros_listener:
-  #   image: osrf/ros:humble-desktop-full
-  #   command: ros2 run demo_nodes_cpp listener
-  #   depends_on:
-  #     - ros_talker
+  ros_listener:
+    image: osrf/ros:humble-desktop-jammy
+    command: ros2 run demo_nodes_cpp listener
+    depends_on:
+      - ros_talker

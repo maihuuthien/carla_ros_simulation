@@ -5,7 +5,7 @@ mkdir -p ~/carla-ros-bridge
 cd ~/carla-ros-bridge
 git clone --recurse-submodules https://github.com/carla-simulator/ros-bridge.git src/ros-bridge
 
-source /opt/ros/foxy/setup.bash
+source /opt/ros/humble/setup.bash
 rosdep update
 rosdep install --from-paths src --ignore-src -r
 colcon build

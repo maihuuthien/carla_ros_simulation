@@ -1,20 +1,21 @@
 # First stage sets up the base, ie everything except the active dev repo
-FROM osrf/ros:foxy-desktop-focal AS base
+FROM osrf/ros:humble-desktop-jammy
 
 ARG CARLA_VERSION=0.9.13
-ARG UBUNTU_VERSION=20.04
+ARG UBUNTU_VERSION=22.04
 
 SHELL ["/bin/bash", "-c"]
 
-RUN apt update && apt install -y --no-install-recommends \
+RUN apt update && apt install -y \
+    ros-humble-perception-pcl \
+    ros-humble-rqt-gui-py \
+    ros-humble-derived-object-msgs \
+    ros-humble-cv-bridge \
     wget \
     python3-pip \
-    ros-foxy-derived-object-msgs \
-    ros-foxy-ackermann-msgs
+    xdg-user-dirs
 
-RUN sudo apt install python3-colcon-common-extensions
-
-RUN mkdir -p ~/carla-ros-bridge
+RUN mkdir -p /opt/carla-ros-bridge
 WORKDIR /opt/carla-ros-bridge
 
 RUN mkdir src && \
@@ -29,13 +30,15 @@ RUN mkdir src && \
     rm -f 1.3.0.tar.gz && \
     mv ros-carla-msgs-1.3.0 carla_msgs
 
+COPY PclRecorderROS2.h ./src/ros-bridge/pcl_recorder/include/PclRecorderROS2.h
+
 RUN rosdep update && rosdep install --from-paths src --ignore-src -r
-RUN source /opt/ros/foxy/setup.bash && \
+RUN source /opt/ros/${ROS_DISTRO}/setup.bash && \
     colcon build --symlink-install
 
 RUN python3 -m pip install --upgrade pip && python3 -m pip install numpy pygame
-RUN wget --no-check-certificate https://github.com/gezp/carla_ros/releases/download/carla-${CARLA_VERSION}-ubuntu-${UBUNTU_VERSION}/carla-${CARLA_VERSION}-cp38-cp38-linux_x86_64.whl && \
-    pip3 install carla-${CARLA_VERSION}-cp38-cp38-linux_x86_64.whl
+RUN wget --no-check-certificate https://github.com/gezp/carla_ros/releases/download/carla-${CARLA_VERSION}-ubuntu-${UBUNTU_VERSION}/carla-${CARLA_VERSION}-cp310-cp310-linux_x86_64.whl && \
+    pip3 install carla-${CARLA_VERSION}-cp310-cp310-linux_x86_64.whl
 
 COPY ros_entrypoint.sh /
 
