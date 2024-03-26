@@ -3,32 +3,34 @@ version: '3.8'
 services:
 
   # Carla server container
-  carla:
-    image: carlasim/carla:0.9.13
-    container_name: carla_server
-    runtime: nvidia
-    ports:
-      - 2000-2002:2000-2002
-    command: /bin/bash -c "./CarlaUE4.sh -nosound -carla-server -RenderOffscreen -world-port=2000 -carla-streaming-port=0"
+  # carla:
+  #   image: carlasim/carla:0.9.13
+  #   container_name: carla_server
+  #   runtime: nvidia
+  #   ports:
+  #     - 2000-2002:2000-2002
+  #   command: /bin/bash -c "./CarlaUE4.sh -nosound -carla-server -RenderOffscreen -world-port=2000 -carla-streaming-port=0"
 
   # Carla ROS bridge container
   bridge:
     build:
       context: ./docker/ros_carla_bridge/
       dockerfile: Dockerfile
+    image: carla_ros_bridge:latest
     container_name: carla_ros_bridge
-    command: ros2 launch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch.py host:=carla_server timeout:=5
+    command: ros2 launch carla_ros_bridge carla_ros_bridge_with_example_ego_vehicle.launch.py host:=${CARLA_HOST_IP} timeout:=5
     runtime: nvidia
     restart: always
-    depends_on: 
-      carla:
-        condition: service_started
+    # depends_on: 
+    #   carla:
+    #     condition: service_started
 
   # Custom ROS2 container
   ros2_container:
     build:
       context: ./docker/ros2_container/
       dockerfile: Dockerfile
+    image: ros2_container:latest
     container_name: ros2_container
     command: ros2 run ros2_utils list_topics_node
     depends_on: 
@@ -40,7 +42,11 @@ services:
     build:
       context: ./docker/carla_client_node/
       dockerfile: Dockerfile
+    image: carla_client:latest
     container_name: carla_client
+    environment:
+      - CARLA_HOST_IP=${CARLA_HOST_IP}
+      - CARLA_HOST_PORT=${CARLA_HOST_PORT}
     restart: always
     depends_on: 
       bridge:
@@ -51,9 +57,10 @@ services:
     build:
       context: ./docker/foxglove_bridge/
       dockerfile: Dockerfile
+    image: foxglove-bridge:latest
+    container_name: foxglove_bridge
     ports:
       - 8765:8765
-    container_name: foxglove_bridge
     command: ros2 launch foxglove_bridge foxglove_bridge_launch.xml port:=8765
     restart: always
     depends_on: 
@@ -61,13 +68,13 @@ services:
         condition: service_started
 
   # Example ros talker node
-  ros_talker:
-    image: osrf/ros:humble-desktop-full
-    command: ros2 run demo_nodes_cpp talker
+  # ros_talker:
+  #   image: osrf/ros:humble-desktop-full
+  #   command: ros2 run demo_nodes_cpp talker
 
-   # Example ros listener node
-  ros_listener:
-    image: osrf/ros:humble-desktop-full
-    command: ros2 run demo_nodes_cpp listener
-    depends_on:
-      - ros_talker
+  #  # Example ros listener node
+  # ros_listener:
+  #   image: osrf/ros:humble-desktop-full
+  #   command: ros2 run demo_nodes_cpp listener
+  #   depends_on:
+  #     - ros_talker

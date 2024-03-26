@@ -512,7 +512,7 @@ RUN apt update && apt install -y python3-pip
 RUN sudo apt install python3-colcon-common-extensions
 
 RUN mkdir -p ~/carla-ros-bridge
-WORKDIR /root/carla-ros-bridge
+WORKDIR /opt/carla-ros-bridge
 
 RUN git clone --recurse-submodules https://github.com/carla-simulator/ros-bridge.git src/ros-bridge
 

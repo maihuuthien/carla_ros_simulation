@@ -1,6 +1,7 @@
 build
 install
 log
+.env
 
 docker/ros2_container/ros2_ws/log
 docker/ros2_container/ros2_ws/build

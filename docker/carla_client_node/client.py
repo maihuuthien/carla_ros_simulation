@@ -23,7 +23,6 @@ not the case, the clients needs to take in account at each frame how many
 sensors are going to tick at each frame.
 """
 
-import time
 import glob
 import os
 import sys
@@ -53,7 +52,11 @@ def sensor_callback(sensor_data, sensor_queue, sensor_name):
 
 def main():
     # We start creating the client
-    client = carla.Client('carla_server', 2000, worker_threads=8) # Carla running in a container, host name is the name of the container
+    client = carla.Client(
+        str(os.environ["CARLA_HOST_IP"]),
+        int(os.environ["CARLA_HOST_PORT"]),
+        worker_threads=8
+    )
     client.set_timeout(5.0)
     world = client.get_world()
 
